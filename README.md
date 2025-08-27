@@ -48,3 +48,57 @@ Join our community of developers creating universal apps.
 
 - [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
 - [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+
+
+## Flujo de datos para escalar el proyecto 
+
+1. Carga inicial (Entrenador)
+
+El entrenador usa la app (iOS/Android o web).
+
+Sube su base de datos de jugadores (ej: CSV, Excel o manual).
+
+Ingresa los emails autorizados que podrán acceder.
+
+La app envía estos datos al Backend API.
+
+➡️ Destino: Los datos quedan guardados en la Base de Datos central (ej: PostgreSQL, Firebase, Supabase).
+
+2. Generación de URL única
+
+El Backend genera un token aleatorio (ej: xyz123).
+
+Ese token se asocia al entrenador y a su dataset en la DB.
+
+La app muestra al entrenador un link como:
+https://miapp.com/access/xyz123
+
+➡️ Destino: URL almacenada en la DB para validar futuros accesos.
+
+3. Acceso del jugador
+
+El jugador abre el link que le pasó el entrenador.
+
+La web pide al jugador su email.
+
+La web envía email + token al Backend API para validar.
+
+➡️ Destino: El Backend busca en la DB si ese email está autorizado para el dataset de xyz123.
+
+4. Validación
+
+Si el email está en la lista de autorizados → acceso concedido.
+
+Si no está → acceso denegado.
+
+➡️ Destino: Respuesta JSON de la API con authorized: true/false.
+
+5. Visualización de datos
+
+Si autorizado, la web hace una petición al Backend API para obtener la data del entrenador (/data/xyz123).
+
+El Backend responde con los datos crudos (ej: JSON con métricas).
+
+La web renderiza los gráficos dinámicos con esos datos (ej: Chart.js, Recharts, D3.js).
+
+➡️ Destino: Datos nunca se guardan en el navegador, solo se muestran.

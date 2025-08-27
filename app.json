@@ -37,6 +37,10 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "SUPABASE_URL": "https://kgjonmhifdtulfvnjkdt.supabase.co",
+      "SUPABASE_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imtnam9ubWhpZmR0dWxmdm5qa2R0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyNTk2NDAsImV4cCI6MjA3MTgzNTY0MH0.lMJN2qImt-u6_2VgGpywmdAFblhkZzOEpnGH2aaAGUc"
     }
   }
 }
