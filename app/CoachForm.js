@@ -36,20 +36,24 @@ export default function CoachForm() {
       return;
     }
     const emailList = emails.split(/[,\n]+/).map(e => e.trim()).filter(e => e);
-        // Verificar si el email del coach ya está registrado
-        const user = await supabase.auth.getUser();
-        const coachEmail = user.data.user.email;
-        const { data: existingCoach, error: coachCheckError } = await supabase
-          .from('coaches')
-          .select('id')
-          .eq('email', coachEmail)
-          .single();
-        if (existingCoach) {
-          alert('Ya existe un entrenador registrado con este email. No puedes registrarte de nuevo.');
-          return;
-        }
+  // Inicializa el objeto team antes de cualquier uso
+  const team = { name: teamName };
+    // Verificar si el email del coach ya está registrado
+    const user = await supabase.auth.getUser();
+    const coachEmail = user.data.user.email;
+    const { data: existingCoach, error: coachCheckError } = await supabase
+      .from('coaches')
+      .select('id')
+      .eq('email', coachEmail)
+      .single();
 
-    const team = { name: teamName };
+    if (existingCoach) {
+      // El coach ya existe, usa su id para el nuevo equipo
+      team.coach_id = existingCoach.id;
+    } else {
+      // El coach no existe, usa el id del usuario autenticado
+      team.coach_id = user.data.user.id;
+    }
 
     // Descargar y parsear jugadores del Google Sheet
     let players = [];

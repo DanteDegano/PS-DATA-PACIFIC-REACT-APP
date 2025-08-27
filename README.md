@@ -42,12 +42,36 @@ To learn more about developing your project with Expo, look at the following res
 - [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
 - [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
 
-## Join the community
 
-Join our community of developers creating universal apps.
+## Estructura de componentes
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+A continuación se describe la función de cada componente principal de la app:
+
+- **Collapsible.tsx**: Componente para mostrar secciones expandibles/colapsables, útil para agrupar información y mejorar la experiencia de usuario.
+- **ExternalLink.tsx**: Renderiza enlaces externos con estilos y manejo seguro de navegación fuera de la app.
+- **HapticTab.tsx**: Tab personalizado que agrega retroalimentación háptica al cambiar de pestaña.
+- **HelloWave.tsx**: Componente visual animado para dar la bienvenida o mostrar mensajes amigables.
+- **ParallaxScrollView.tsx**: ScrollView con efecto parallax para mostrar listas o detalles con animaciones modernas.
+- **ThemedText.tsx**: Componente de texto que adapta el color y estilo según el tema (oscuro/claro) de la app.
+- **ThemedView.tsx**: View que adapta el fondo y estilos según el tema seleccionado.
+- **ui/IconSymbol.tsx & IconSymbol.ios.tsx**: Iconos personalizados para la barra de navegación y otros elementos visuales.
+- **ui/TabBarBackground.tsx & TabBarBackground.ios.tsx**: Fondo personalizado para la barra de pestañas, adaptado a cada plataforma.
+
+## Estructura de pantallas
+
+- **app/(tabs)/index.tsx**: Pantalla principal tras el login, muestra el Home y navegación por pestañas.
+- **app/(tabs)/explore.tsx**: Pantalla de exploración de datos o funcionalidades adicionales.
+- **app/HelloWave.tsx**: Pantalla de bienvenida con animación.
+- **app/_layout.tsx**: Define la estructura y navegación principal de la app.
+- **app/(tabs)/_layout.tsx**: Estructura y navegación específica para las pestañas.
+
+## Estructura de lógica y utilidades
+
+- **constants/Colors.ts**: Define la paleta de colores y temas usados en la app.
+- **hooks/useColorScheme.ts & useColorScheme.web.ts**: Detecta y gestiona el esquema de color del sistema (oscuro/claro).
+- **hooks/useThemeColor.ts**: Permite obtener colores adaptados al tema actual.
+
+## Flujo de datos para escalar el proyecto 
 
 
 ## Flujo de datos para escalar el proyecto 
@@ -66,6 +90,7 @@ La app envía estos datos al Backend API.
 
 2. Generación de URL única
 
+
 El Backend genera un token aleatorio (ej: xyz123).
 
 Ese token se asocia al entrenador y a su dataset en la DB.
@@ -73,7 +98,7 @@ Ese token se asocia al entrenador y a su dataset en la DB.
 La app muestra al entrenador un link como:
 https://miapp.com/access/xyz123
 
-➡️ Destino: URL almacenada en la DB para validar futuros accesos.
+➡️ Destino: Esta URL se guarda en la base de datos, en la columna `url_random` de la tabla `teams`, para validar futuros accesos.
 
 3. Acceso del jugador
 
