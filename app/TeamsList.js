@@ -3,7 +3,6 @@ import { Alert, Button, Text, View } from 'react-native';
 import { deleteTeam } from '../src/services/deleteTeam';
 import supabase from '../src/supabaseClient';
 import EditTeam from './EditTeam';
-import TeamDetails from './TeamDetails';
 
 
 
@@ -77,17 +76,13 @@ export default function TeamsList() {
           teams.map(team => (
             <View key={team.id} style={{ marginBottom: 16, backgroundColor: '#181C24', borderRadius: 8, padding: 12 }}>
               <Text style={{ color: '#FFD700', fontWeight: 'bold', fontSize: 16 }}>{team.name}</Text>
-              <Button title="Ver detalles" onPress={() => { setSelectedTeamId(team.id); setEditMode(false); }} color="#2196F3" />
-              <View style={{ height: 8 }} />
               <Button title="Editar" onPress={() => { setSelectedTeamId(team.id); setEditMode(true); }} color="#FFD700" />
               <View style={{ height: 8 }} />
               <Button title="Eliminar" onPress={() => handleDelete(team.id)} color="#E53935" />
             </View>
           ))
         )}
-        {selectedTeamId && !editMode && (
-          <TeamDetails teamId={selectedTeamId} onEdit={() => setEditMode(true)} onBack={() => { setSelectedTeamId(null); setEditMode(false); }} />
-        )}
+  {/* Eliminado Ver detalles */}
         {selectedTeamId && editMode && (
           <EditTeam team={selectedTeam} players={[]} emails={[]} onSave={() => { setEditMode(false); }} onCancel={() => setEditMode(false)} />
         )}

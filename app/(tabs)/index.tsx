@@ -2,7 +2,7 @@ import { createClient, Session } from '@supabase/supabase-js';
 import Constants from 'expo-constants';
 import React, { useEffect, useState } from 'react';
 import AuthScreen from '../AuthScreen';
-const CoachForm = require('../CoachForm').default;
+import Home from '../Home';
 
 const supabaseUrl = Constants.expoConfig?.extra?.SUPABASE_URL ?? '';
 const supabaseKey = Constants.expoConfig?.extra?.SUPABASE_KEY ?? '';
@@ -29,5 +29,5 @@ export default function HomeScreen() {
 
   if (loading) return null;
   if (!session) return <AuthScreen onAuth={setSession} />;
-  return session.user ? <CoachForm coachId={session.user.id} /> : null;
+  return session.user ? <Home /> : null;
 }
