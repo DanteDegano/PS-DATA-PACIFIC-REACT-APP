@@ -43,6 +43,28 @@ export default function Home() {
           <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 20, letterSpacing: 1 }}>{pantalla.label}</Text>
         </TouchableOpacity>
       ))}
+
+      {/* Botón de logout */}
+      <TouchableOpacity
+        onPress={() => {
+          // Aquí deberías agregar la lógica de logout, por ejemplo limpiar tokens y navegar a AuthScreen
+          navigation.navigate('AuthScreen');
+        }}
+        style={{
+          width: 260,
+          backgroundColor: '#D32F2F',
+          borderRadius: 12,
+          paddingVertical: 16,
+          marginBottom: 16,
+          alignItems: 'center',
+          shadowColor: '#000',
+          shadowOpacity: 0.2,
+          shadowRadius: 8,
+          elevation: 4,
+        }}
+      >
+        <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 20, letterSpacing: 1 }}>Cerrar sesión</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
