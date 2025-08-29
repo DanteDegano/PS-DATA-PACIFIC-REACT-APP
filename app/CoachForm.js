@@ -36,8 +36,8 @@ export default function CoachForm() {
       return;
     }
     const emailList = emails.split(/[,\n]+/).map(e => e.trim()).filter(e => e);
-  // Inicializa el objeto team antes de cualquier uso
-  const team = { name: teamName };
+    // Inicializa el objeto team antes de cualquier uso
+    const team = { name: teamName, url_drive_team: sheetUrl };
     // Verificar si el email del coach ya está registrado
     const user = await supabase.auth.getUser();
     const coachEmail = user.data.user.email;
@@ -50,9 +50,14 @@ export default function CoachForm() {
     if (existingCoach) {
       // El coach ya existe, usa su id para el nuevo equipo
       team.coach_id = existingCoach.id;
+      // Actualiza el nombre del coach si es diferente
+      if (coachName && existingCoach.name !== coachName) {
+        await supabase.from('coaches').update({ name: coachName }).eq('id', existingCoach.id);
+      }
     } else {
-      // El coach no existe, usa el id del usuario autenticado
+      // El coach no existe, usa el id del usuario autenticado y guarda el nombre
       team.coach_id = user.data.user.id;
+      await supabase.from('coaches').insert({ id: user.data.user.id, name: coachName, email: coachEmail });
     }
 
     // Descargar y parsear jugadores del Google Sheet
