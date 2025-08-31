@@ -116,18 +116,25 @@ export default function TeamsList() {
   const idsToDelete = dbPlayers.map(p => p.id);
   console.log('IDs a borrar:', idsToDelete);
   if (idsToDelete.length > 0) {
-    const { error: delError } = await supabase.from('players').delete().in('id', idsToDelete);
-    if (delError) console.log('Error borrando jugadores:', delError);
+    // Borrar en lotes de 500
+    const batchSize = 500;
+    for (let i = 0; i < idsToDelete.length; i += batchSize) {
+      const batch = idsToDelete.slice(i, i + batchSize);
+      const { error: delError } = await supabase.from('players').delete().in('id', batch);
+      if (delError) console.log('Error borrando jugadores (batch):', delError);
+    }
   } else {
     console.log('No hay jugadores para borrar.');
   }
-  // Insertar todos los jugadores nuevos
-  for (const row of csvPlayers) {
-  const playerName = row["Player Name"] || row["player name"] || row["Jugador"] || "Sin nombre";
-  console.log('Insertando jugador:', { stats: row, team_id: teamId, name: playerName });
-  const { error: insError } = await supabase.from('players').insert({ stats: row, team_id: teamId, name: playerName });
-    if (insError) console.log('Error insertando jugador:', insError);
-  }
+  // Insertar todos los jugadores nuevos en un solo batch
+  const playersToInsert = csvPlayers.map(row => ({
+    stats: row,
+    team_id: teamId,
+    name: row["Player Name"] || row["player name"] || row["Jugador"] || "Sin nombre"
+  }));
+  console.log('Insertando jugadores (batch):', playersToInsert.length);
+  const { error: insError } = await supabase.from('players').insert(playersToInsert);
+  if (insError) console.log('Error insertando jugadores:', insError);
       Alert.alert('Sincronización completa', `Se actualizaron los datos del equipo.`);
     } catch (err) {
       console.log('Error en sincronización:', err);
