@@ -6,14 +6,11 @@ import { registerTeam } from '../src/services/registerTeam';
 import supabase from '../src/supabaseClient';
 import { sheetUrlToCsv } from '../src/utils/sheetUrlToCsv';
 
-
-
 export default function CoachForm() {
   const navigation = useNavigation();
   const [teamName, setTeamName] = useState('');
   const [coachName, setCoachName] = useState('');
   const [sheetUrl, setSheetUrl] = useState('');
-  const [emails, setEmails] = useState('');
   const [showConfirm, setShowConfirm] = useState(false);
   const [confirmData, setConfirmData] = useState(null);
 
@@ -31,13 +28,17 @@ export default function CoachForm() {
       alert('Ingresa el nombre del equipo');
       return;
     }
-    if (!emails) {
-      alert('Ingresa al menos un email autorizado');
-      return;
+    // Generar contraseña procedural
+    function generatePassword(length = 8) {
+      const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+      let pass = '';
+      for (let i = 0; i < length; i++) {
+        pass += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return pass;
     }
-    const emailList = emails.split(/[,\n]+/).map(e => e.trim()).filter(e => e);
-    // Inicializa el objeto team antes de cualquier uso
-    const team = { name: teamName, url_drive_team: sheetUrl };
+    const teamPassword = generatePassword(8);
+    const team = { name: teamName, url_drive_team: sheetUrl, team_password: teamPassword };
     // Verificar si el email del coach ya está registrado
     const user = await supabase.auth.getUser();
     const coachEmail = user.data.user.email;
@@ -48,14 +49,11 @@ export default function CoachForm() {
       .single();
 
     if (existingCoach) {
-      // El coach ya existe, usa su id para el nuevo equipo
       team.coach_id = existingCoach.id;
-      // Actualiza el nombre del coach si es diferente
       if (coachName && existingCoach.name !== coachName) {
         await supabase.from('coaches').update({ name: coachName }).eq('id', existingCoach.id);
       }
     } else {
-      // El coach no existe, usa el id del usuario autenticado y guarda el nombre
       team.coach_id = user.data.user.id;
       await supabase.from('coaches').insert({ id: user.data.user.id, name: coachName, email: coachEmail });
     }
@@ -70,37 +68,29 @@ export default function CoachForm() {
       }
       const csvText = await response.text();
       const { data } = Papa.parse(csvText, { header: true });
-      console.log('Datos parseados del CSV:', data);
-  // Guardar todas las filas del CSV tal como vienen
-  players = data;
+      players = data;
     } catch (err) {
       alert('Error al obtener jugadores del sheet: ' + err.message);
       return;
     }
 
-    // Mostrar pantalla de confirmación
-    setConfirmData({ team, emailList, players });
+    setConfirmData({ team, players });
     setShowConfirm(true);
   };
 
   const handleConfirm = async () => {
     if (!confirmData) return;
     try {
-      // Obtener el usuario autenticado
       const user = await supabase.auth.getUser();
-      console.log('Usuario autenticado:', user);
-      // Agregar coach_id al objeto team
       const teamWithCoach = { ...confirmData.team, coach_id: user.data.user.id };
-      console.log('Objeto team a registrar:', teamWithCoach);
-      const result = await registerTeam(teamWithCoach, confirmData.players, confirmData.emailList);
+      const result = await registerTeam(teamWithCoach, confirmData.players, []);
       if (result.success) {
         alert('Equipo y jugadores registrados correctamente. ID: ' + result.teamId);
         setTeamName('');
         setSheetUrl('');
-        setEmails('');
         setShowConfirm(false);
         setConfirmData(null);
-        navigation.navigate('Home'); // Navega a la home
+        navigation.navigate('Home');
       } else {
         alert('Error al registrar: ' + (result.error?.message || 'Error desconocido'));
       }
@@ -122,12 +112,25 @@ export default function CoachForm() {
           <View style={{ width: '100%', marginBottom: 16 }}>
             <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 20 }}>Equipo:</Text>
             <Text style={{ color: '#FFD700', fontSize: 20, marginBottom: 10, fontWeight: 'bold', textShadowColor: '#000', textShadowOffset: {width: 1, height: 1}, textShadowRadius: 2 }}>{confirmData.team.name}</Text>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18, marginTop: 8 }}>Clave generada:</Text>
+            <Text
+              style={{ color: '#FFD700', fontSize: 18, fontWeight: 'bold', textShadowColor: '#000', textShadowOffset: {width: 1, height: 1}, textShadowRadius: 2 }}
+              onPress={() => {
+                if (confirmData.team.team_password) {
+                  import('react-native').then(RN => RN.Clipboard.setString(confirmData.team.team_password));
+                  alert('Clave copiada al portapapeles');
+                }
+              }}
+            >
+              {confirmData.team.team_password} <Text style={{ color: '#FFD700' }}>(toca para copiar)</Text>
+            </Text>
+            <Text style={{ color: '#fff', fontSize: 15, marginTop: 10, marginBottom: 8, textAlign: 'center' }}>
+              Puedes volver a ver la clave entrando a <Text style={{ color: '#FFD700', fontWeight: 'bold' }}>Mis equipos</Text>.
+            </Text>
           </View>
-          <View style={{ width: '100%', marginBottom: 16 }}>
-            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 20 }}>Emails autorizados:</Text>
-            {confirmData.emailList.map((email, idx) => (
-              <Text key={idx} style={{ color: '#FFD700', marginLeft: 8, fontSize: 18, fontWeight: 'bold', textShadowColor: '#000', textShadowOffset: {width: 1, height: 1}, textShadowRadius: 2 }}>{email}</Text>
-            ))}
+          <View style={{ width: '100%', marginBottom: 22 }}>
+            <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>Jugadores:</Text>
+            <Text style={{ color: '#FFD700', fontSize: 18, fontWeight: 'bold', textShadowColor: '#000', textShadowOffset: {width: 1, height: 1}, textShadowRadius: 2 }}>{confirmData.players.length}</Text>
           </View>
           <Button title="CONFIRMAR Y REGISTRAR" onPress={handleConfirm} color="#2196F3" />
           <View style={{ height: 16 }} />
@@ -137,14 +140,8 @@ export default function CoachForm() {
     );
   }
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    alert('Sesión cerrada');
-    // Aquí podrías redirigir a la pantalla de login si tienes navegación
-  };
-
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#ffffffff' }}>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: '#181C24' }}>
       <View style={{ width: 340, padding: 24, borderRadius: 12, backgroundColor: '#222733', shadowColor: '#000', shadowOpacity: 0.2, shadowRadius: 8, elevation: 4 }}>
         <Text style={{ fontWeight: 'bold', fontSize: 22, marginBottom: 18, color: '#fff', textAlign: 'center' }}>Registrar equipo</Text>
         <Text style={{ color: '#fff', marginBottom: 6 }}>Nombre de usuario del entrenador:</Text>
@@ -171,40 +168,9 @@ export default function CoachForm() {
           placeholder="Pega la URL aquí"
           placeholderTextColor="#aaa"
         />
-        <Text style={{ color: '#fff', marginBottom: 6 }}>Emails autorizados (separados por coma o salto de línea):</Text>
-        <TextInput
-          value={emails}
-          onChangeText={setEmails}
-          style={{ borderWidth: 1, borderColor: '#FFD700', backgroundColor: '#181C24', color: '#fff', marginBottom: 16, padding: 10, borderRadius: 6 }}
-          placeholder="coach@email.com, otro@email.com"
-          placeholderTextColor="#aaa"
-          multiline
-        />
-  <Button title="Registrar equipo" onPress={handleSubmit} color="#2196F3" />
-  <View style={{ height: 12 }} />
-  <Button title="Ir a Home" onPress={() => navigation.navigate('Home')} color="#FFD700" />
-        {showConfirm && confirmData && (
-          <View style={{ marginTop: 24, backgroundColor: '#2C2F3A', borderRadius: 16, padding: 28, shadowColor: '#000', shadowOpacity: 0.3, shadowRadius: 14, elevation: 8, alignItems: 'center', borderWidth: 2, borderColor: '#FFD700' }}>
-            <Text style={{ color: '#FFD700', fontWeight: 'bold', fontSize: 24, marginBottom: 18, textAlign: 'center', letterSpacing: 1 }}>Confirmar registro</Text>
-            <View style={{ width: '100%', marginBottom: 14 }}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>Equipo:</Text>
-              <Text style={{ color: '#FFD700', fontSize: 18, marginBottom: 10, fontWeight: 'bold', textShadowColor: '#000', textShadowOffset: {width: 1, height: 1}, textShadowRadius: 2 }}>{confirmData.team.name}</Text>
-            </View>
-            <View style={{ width: '100%', marginBottom: 14 }}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>Emails autorizados:</Text>
-              {confirmData.emailList.map((email, idx) => (
-                <Text key={idx} style={{ color: '#FFD700', marginLeft: 8, fontSize: 17, fontWeight: 'bold', textShadowColor: '#000', textShadowOffset: {width: 1, height: 1}, textShadowRadius: 2 }}>{email}</Text>
-              ))}
-            </View>
-            <View style={{ width: '100%', marginBottom: 22 }}>
-              <Text style={{ color: '#fff', fontWeight: 'bold', fontSize: 18 }}>Jugadores:</Text>
-              <Text style={{ color: '#FFD700', fontSize: 18, fontWeight: 'bold', textShadowColor: '#000', textShadowOffset: {width: 1, height: 1}, textShadowRadius: 2 }}>{confirmData.players.length}</Text>
-            </View>
-            <Button title="CONFIRMAR Y REGISTRAR" onPress={handleConfirm} color="#2196F3" />
-            <View style={{ height: 14 }} />
-            <Button title="CANCELAR" onPress={() => setShowConfirm(false)} color="#E53935" />
-          </View>
-        )}
+        <Button title="Registrar equipo" onPress={handleSubmit} color="#2196F3" />
+        <View style={{ height: 12 }} />
+        <Button title="Ir a Home" onPress={() => navigation.navigate('Home')} color="#FFD700" />
       </View>
     </View>
   );

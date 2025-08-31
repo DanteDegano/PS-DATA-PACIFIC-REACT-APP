@@ -7,12 +7,7 @@ export default function Home() {
   const pantallas = [
     { name: 'CoachForm', label: 'Registrar equipo', color: '#2196F3' },
     { name: 'TeamsList', label: 'Ver equipos', color: '#FFD700' },
-    { name: 'TrainerScreen', label: 'Panel entrenador', color: '#4CAF50' },
-    { name: 'PlayerAccessScreen', label: 'Acceso jugador', color: '#FF9800' },
-    { name: 'DataViewScreen', label: 'Ver datos', color: '#00BCD4' },
-    { name: 'EditTeam', label: 'Editar equipo', color: '#9C27B0' },
     { name: 'TeamDetails', label: 'Detalles equipo', color: '#E91E63' },
-    { name: 'HistoryScreen', label: 'Historial', color: '#795548' },
   ];
 
   return (

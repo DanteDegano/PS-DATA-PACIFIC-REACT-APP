@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { Alert, Button, Text, View } from 'react-native';
 import { deleteTeam } from '../src/services/deleteTeam';
 import supabase from '../src/supabaseClient';
-import EditTeam from './EditTeam';
 import Papa from 'papaparse';
 
 export default function TeamsList() {
@@ -23,7 +22,7 @@ export default function TeamsList() {
       }
       const { data, error } = await supabase
         .from('teams')
-        .select('id, name')
+        .select('id, name, team_password')
         .eq('coach_id', coachId);
       if (!error) setTeams(data || []);
       setLoading(false);
@@ -124,8 +123,9 @@ export default function TeamsList() {
   }
   // Insertar todos los jugadores nuevos
   for (const row of csvPlayers) {
-    console.log('Insertando jugador:', { stats: row, team_id: teamId });
-    const { error: insError } = await supabase.from('players').insert({ stats: row, team_id: teamId });
+  const playerName = row["Player Name"] || row["player name"] || row["Jugador"] || "Sin nombre";
+  console.log('Insertando jugador:', { stats: row, team_id: teamId, name: playerName });
+  const { error: insError } = await supabase.from('players').insert({ stats: row, team_id: teamId, name: playerName });
     if (insError) console.log('Error insertando jugador:', insError);
   }
       Alert.alert('Sincronización completa', `Se actualizaron los datos del equipo.`);
@@ -155,16 +155,29 @@ export default function TeamsList() {
           teams.map(team => (
             <View key={team.id} style={{ marginBottom: 16, backgroundColor: '#181C24', borderRadius: 8, padding: 12 }}>
               <Text style={{ color: '#FFD700', fontWeight: 'bold', fontSize: 16 }}>{team.name}</Text>
-              <Button title="Editar" onPress={() => { setSelectedTeamId(team.id); setEditMode(true); }} color="#FFD700" />
-              <View style={{ height: 8 }} />
+              <Text
+                style={{ color: '#fff', fontSize: 14, marginBottom: 6 }}
+                onPress={() => {
+                  if (team.team_password) {
+                    // Copiar al portapapeles
+                    if (typeof navigator !== 'undefined' && navigator.clipboard) {
+                      navigator.clipboard.writeText(team.team_password);
+                    } else {
+                      // React Native Clipboard API
+                      import('react-native').then(RN => RN.Clipboard.setString(team.team_password));
+                    }
+                    Alert.alert('Clave copiada', 'La clave se ha copiado al portapapeles');
+                  }
+                }}
+              >
+                Clave: <Text style={{ color: '#FFD700', fontWeight: 'bold' }}>{team.team_password || 'Sin clave'}</Text>
+                {team.team_password ? <Text style={{ color: '#FFD700' }}> (toca para copiar)</Text> : null}
+              </Text>
               <Button title="Eliminar" onPress={() => handleDelete(team.id)} color="#E53935" />
               <View style={{ height: 8 }} />
               <Button title="Sync data" onPress={() => handleSync(team.id)} color="#00BCD4" />
             </View>
           ))
-        )}
-        {selectedTeamId && editMode && (
-          <EditTeam team={selectedTeam} players={[]} emails={[]} onSave={() => { setEditMode(false); }} onCancel={() => setEditMode(false)} />
         )}
       </View>
     </View>
