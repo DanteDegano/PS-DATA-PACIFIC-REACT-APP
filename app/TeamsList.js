@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react';
 import { Alert, Button, Text, View } from 'react-native';
+import { useNavigation } from '@react-navigation/native';
 import { deleteTeam } from '../src/services/deleteTeam';
 import supabase from '../src/supabaseClient';
 import Papa from 'papaparse';
 
 export default function TeamsList() {
+  const navigation = useNavigation();
   const [teams, setTeams] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedTeamId, setSelectedTeamId] = useState(null);
@@ -183,6 +185,8 @@ export default function TeamsList() {
               <Button title="Eliminar" onPress={() => handleDelete(team.id)} color="#E53935" />
               <View style={{ height: 8 }} />
               <Button title="Sync data" onPress={() => handleSync(team.id)} color="#00BCD4" />
+              <View style={{ height: 8 }} />
+              <Button title="Ver dashboard" onPress={() => navigation.navigate('TeamDashboardScreen', { teamId: team.id, teamName: team.name })} color="#FFD700" />
             </View>
           ))
         )}

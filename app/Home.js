@@ -7,16 +7,12 @@ export default function Home() {
   const pantallas = [
     { name: 'CoachForm', label: 'Registrar equipo', color: '#2196F3' },
     { name: 'TeamsList', label: 'Ver equipos', color: '#FFD700' },
-    { name: 'TeamDetails', label: 'Detalles equipo', color: '#E91E63' },
   ];
 
   return (
     <ScrollView style={{ flex: 1, backgroundColor: '#181C24' }} contentContainerStyle={{ alignItems: 'center', paddingVertical: 32 }}>
       <Text style={{ fontSize: 28, fontWeight: 'bold', color: '#FFD700', marginBottom: 18, textAlign: 'center' }}>
-        Bienvenido 👋
-      </Text>
-      <Text style={{ fontSize: 18, color: '#fff', marginBottom: 24, textAlign: 'center', maxWidth: 320 }}>
-        Elige una opción para navegar por la app:
+        VANTAGE
       </Text>
       {pantallas.map((pantalla, idx) => (
         <TouchableOpacity
@@ -42,7 +38,7 @@ export default function Home() {
       {/* Botón de logout */}
       <TouchableOpacity
         onPress={() => {
-          // Aquí deberías agregar la lógica de logout, por ejemplo limpiar tokens y navegar a AuthScreen
+
           navigation.navigate('AuthScreen');
         }}
         style={{

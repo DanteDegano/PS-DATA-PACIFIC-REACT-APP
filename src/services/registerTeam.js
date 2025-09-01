@@ -36,22 +36,7 @@ export async function registerTeam(team, players, emails) {
 		.select();
 	if (teamError) return { error: teamError };
 	const teamId = teamData[0]?.id;
-	// Insertar emails autorizados evitando duplicados
-	if (emails && emails.length > 0 && teamId) {
-		const { data: existingEmails } = await supabase
-			.from('authorized_emails')
-			.select('email')
-			.in('email', emails)
-			.eq('team_id', teamId);
-		const newEmails = emails.filter(email => !existingEmails?.some(e => e.email === email));
-		if (newEmails.length > 0) {
-			const emailsWithTeam = newEmails.map(email => ({ email, team_id: teamId }));
-			const { error: emailsError } = await supabase
-				.from('authorized_emails')
-				.insert(emailsWithTeam);
-			if (emailsError) return { error: emailsError };
-		}
-	}
+	// Eliminada lógica de emails autorizados
 	// Insertar jugadores en la tabla 'players'
 	if (players && players.length > 0 && teamId) {
 		const playersWithTeam = players.map(player => ({

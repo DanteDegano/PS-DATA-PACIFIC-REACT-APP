@@ -18,12 +18,7 @@ export async function deleteTeam(teamId) {
     .eq('team_id', teamId);
   if (playersError) return { error: playersError };
 
-  // Eliminar emails autorizados asociados
-  const { error: emailsError } = await supabase
-    .from('authorized_emails')
-    .delete()
-    .eq('team_id', teamId);
-  if (emailsError) return { error: emailsError };
+  // Eliminada lógica de emails autorizados
 
   // Eliminar el equipo
   const { error: teamError } = await supabase
